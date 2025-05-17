@@ -1,0 +1,18 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: projects-argoapp
+  namespace: argocd
+spec:
+  destination:
+    name: in-cluster
+  project: default
+  source:
+    repoURL: http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/mgmt-template.git
+    targetRevision: main
+    path: projects
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

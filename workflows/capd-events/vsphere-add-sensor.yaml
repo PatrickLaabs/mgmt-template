@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: capd-add
+  namespace: argo
+spec:
+  eventBusName: capd-add
+  template:
+    serviceAccountName: argocd-workflow
+  dependencies:
+    - name: capd-add
+      eventSourceName: capd-add
+      eventName: capd-add
+  triggers:
+    - template:
+        name: capd-add
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: capd-add-
+              spec:
+                serviceAccountName: argocd-workflow
+                entrypoint: capd-add-workflow
+                arguments:
+                  parameters:
+                    - name: cluster
+                      value: ""
+                    - name: imageTag
+                      value: "1.0.0"
+                templates:
+                  - name: capd-add-workflow
+                    steps:
+                      - - name: step-one
+                          templateRef: 
+                            name: capd-add-template
+                            template: frigg-builder-pod
+
+          parameters:
+            - src:
+                dependencyName: capd-add
+                dataKey: body.metadata.name
+              dest: spec.arguments.parameters.0.value
+            

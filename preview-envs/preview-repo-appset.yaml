@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: preview-repo-appset
+  namespace: argocd
+spec:
+  generators:
+  - clusters:
+      selector:
+        matchLabels:
+          provider: vcluster
+  template:
+    metadata:
+      name: 'repo-{{name}}'
+    spec:
+      project: vcluster
+      source:
+        repoURL: 'http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/{{name}}.git'
+        targetRevision: main
+        path: app-deployments
+      destination:
+        name: '{{name}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

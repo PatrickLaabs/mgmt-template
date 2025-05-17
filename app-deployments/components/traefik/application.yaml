@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik-components
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '10'
+spec:
+  project: default
+  source:
+    repoURL: 'https://traefik.github.io/charts'
+    targetRevision: 26.1.0
+    chart: traefik
+    helm:
+      releaseName: traefik
+      values: |-
+        globalArguments:
+          - --global.sendanonymoususage=false
+        ingressClass:
+          enabled: true
+          isDefaultClass: true
+          name: traefik
+        ingressRoute:
+          dashboard:
+            enabled: true
+            entryPoints: ["websecure"]
+        additionalArguments:
+          - --entrypoints.web.http.redirections.entryPoint.to=:443
+          - --entrypoints.web.http.redirections.entryPoint.scheme=https
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/instance
+                        operator: In
+                        values:
+                          - traefik
+                  topologyKey: kubernetes.io/hostname
+                weight: 1
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app.kubernetes.io/instance
+                        operator: In
+                        values:
+                          - traefik
+                  topologyKey: failure-domain.beta.kubernetes.io/zone
+                weight: 1
+        logs:
+          access:
+            enabled: true
+            format: json
+          general:
+            format: json
+            level: WARNING
+        instanceLabelOverride: traefik
+        podDisruptionBudget:
+          minAvailable: 1
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 500m
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        maxDuration: 5m0s
+        factor: 2

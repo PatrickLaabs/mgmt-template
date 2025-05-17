@@ -1,0 +1,58 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster-generator
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - pullRequest:
+      gitea:
+        # The Gitea organization or user.
+        owner: gitea_admin
+        # The Gitea repository
+        repo: sample-application
+        # The Gitea url to use
+        api: 'http://gitea-http.gitea.svc.cluster.local:3000'
+        # Reference to a Secret containing an access token. (optional)
+        # tokenRef:
+        #   secretName: password-token
+        #   key: token
+        #many gitea deployments use TLS, but many are self-hosted and self-signed certificates
+      insecure: true
+    requeueAfterSeconds: 2
+          # owner: patricklaabs
+          # repo: sample-application
+          # requeueAfterSeconds: 30
+          # Optional, but useful so that you don't have rate-limiting problems if
+          # using a private cluster but it's better to use a webhook if you can
+          # https://argocd-applicationset.readthedocs.io/en/main/Generators-Pull-Request/#webhook-configuration
+          # tokenRef:
+          # secretName: github-token
+          # key: token
+  template:
+    metadata:
+      name: 'sample-app-{{.branch}}-{{.number}}'
+    spec:
+      source:
+        repoURL: 'http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sample-application.git'
+        targetRevision: 'main'
+        path: vcluster-generator
+        helm:
+          parameters:
+          - name: cluster_name
+            value: "pull-{{.number}}-{{.head_sha}}"
+      project: vcluster
+      destination:
+        name: in-cluster
+        namespace: vcluster
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      ignoreDifferences:
+        - jsonPointers:
+            - /controlPlaneEndpoint
+          kind: VCluster

@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: capd-delete
+  namespace: argo
+spec:
+  template:
+    serviceAccountName: argocd-workflow
+  eventBusName: capd-delete
+  resource:
+    capd-delete:
+      namespace: default
+      group: infrastructure.cluster.x-k8s.io
+      version: v1beta1
+      resource: dockerclusters
+      eventTypes:
+        - DELETE
+      filter:
+        afterStart: true

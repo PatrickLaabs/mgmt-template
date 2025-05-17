@@ -1,0 +1,23 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infrastructure
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  description: infrastructure Clusters & Apps
+  destinations:
+  - namespace: '*'
+    name: '*'
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/mgmt-template.git
+  - https://traefik.github.io/charts
+  - https://prometheus-community.github.io/helm-charts
+  - http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/workloadclusters.git

@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespaces-argoapp.yaml
+  - projects-argoapp.yaml
+  - app-deployments-argoapp.yaml
+  # - workflows-argoapp.yaml
+  - preview-environments.yaml
+  # - applicationsets-deployments.yaml

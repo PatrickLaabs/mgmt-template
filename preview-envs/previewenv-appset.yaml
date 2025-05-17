@@ -1,0 +1,41 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: preview-envs
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - pullRequest:
+      gitea:
+        owner: gitea_admin
+        repo: sample-application
+        api: 'http://gitea-http.gitea.svc.cluster.local:3000'
+      insecure: true
+    requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: 'preview-sample-app-{{.branch}}-{{.number}}'
+    spec:
+      source:
+        repoURL: 'http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/mgmt-template.git'
+        targetRevision: 'main'
+        path: preview-envs/vcluster-generator
+        helm:
+          parameters:
+          - name: cluster_name
+            value: "preview-pull-{{.number}}"
+      project: vcluster
+      destination:
+        name: in-cluster
+        namespace: vcluster
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      ignoreDifferences:
+        - jsonPointers:
+            - /controlPlaneEndpoint
+          kind: VCluster

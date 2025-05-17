@@ -1,0 +1,24 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: vcluster
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  description: vcluster Clusters & Apps
+  destinations:
+  - namespace: '*'
+    name: '*'
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - '*'
+  - http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/preview-pull-1.git
+  - http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/mgmt-template.git
+  - https://github.com/PatrickLaabs/sample-application.git
+  - http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sample-application.git

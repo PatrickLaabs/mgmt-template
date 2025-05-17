@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sample-application
+  namespace: argocd
+spec:
+  generators:
+  - clusters:
+      selector:
+        matchLabels:
+          provider: vcluster
+  template:
+    metadata:
+      name: '{{name}}'
+    # spec:
+    #   project: default
+    #   source:
+    #     repoURL: http://gitea-http.gitea.svc.cluster.local:3000/gitea_admin/sample-application.git
+    #     targetRevision: main
+    #     path: k8s-manifests
+    #     kustomize:
+    #       images:
+    #       - name: gitea.local:3000/gitea_admin/sample-application
+    #         newTag: '{{name}}'
+    #   destination:
+    #     name: '{{name}}'
+    #     namespace: default
+    #   syncPolicy:
+    #     automated:
+    #       prune: true
+    #       selfHeal: true
+    spec:
+      project: vcluster
+      source:
+        repoURL: https://patricklaabs.github.io/sample-application/
+        targetRevision: 1.0.4
+        helm:
+          releaseName: sample-application
+        chart: sample-application
+      destination:
+        name: '{{name}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
